@@ -16,8 +16,8 @@ O conteúdo do curso se concentra na análise estatística descritiva: apresenta
 
 ### Plano do curso
 
-- [Aula 1](https://github.com/lgelape/Curso_2018_ENAP/blob/master/Aulas/Ponto1.Rmd): Introdução ao R
-- [Aula 2](https://github.com/lgelape/Curso_2018_ENAP/blob/master/Aulas/Ponto2.Rmd): Carregar e visualizar bancos de dados
-- [Aula 3](https://github.com/lgelape/Curso_2018_ENAP/blob/master/Aulas/Ponto3.Rmd): Organizar e exportar bancos de dados
-- [Aula 4](https://github.com/lgelape/Curso_2018_ENAP/blob/master/Aulas/Ponto4.Rmd): Estatísticas descritivas e tabelas de frequência
-- [Aula 5](https://github.com/lgelape/Curso_2018_ENAP/blob/master/Aulas/Ponto5.Rmd): Representações gráficas de variáveis
+- [Aula 1](https://github.com/lgelape/Curso_2018_ENAP/blob/master/aulas/Ponto1.Rmd): Introdução ao R
+- [Aula 2](https://github.com/lgelape/Curso_2018_ENAP/blob/master/aulas/Ponto2.Rmd): Carregar e visualizar bancos de dados
+- [Aula 3](https://github.com/lgelape/Curso_2018_ENAP/blob/master/aulas/Ponto3.Rmd): Organizar e exportar bancos de dados
+- [Aula 4](https://github.com/lgelape/Curso_2018_ENAP/blob/master/aulas/Ponto4.Rmd): Estatísticas descritivas e tabelas de frequência
+- [Aula 5](https://github.com/lgelape/Curso_2018_ENAP/blob/master/aulas/Ponto5.Rmd): Representações gráficas de variáveis

@@ -1,0 +1,16 @@
+Latinobarometro 2016
+
+Arquivos:
+
+(1) Latinobarometro2016Eng_v20170205
+Arquivo de extensao .dta contendo a base de dados do Latinobarometro de 2016 em Ingles.
+
+(2) Latinobarometro2016Esp_v20170205
+Arquivo de extensao .dta contendo a base de dados do Latinobarometro de 2016 em Espanhol.
+
+Contem o questionario da pesquisa ("Latinobarometro2016EngQuestionnaire" e "Latinobarometro2016EspCuestionario").
+
+Download: 
+
+Data: 27/02/2018
+Link: http://www.latinobarometro.org/latContents.jsp

@@ -1,0 +1,21 @@
+Pesquisa de Percepção de Medo MG
+Nome da Pesquisa: Pesquisa de Percepção de Medo MG
+
+Sumário: A pesquisa na qual o presente relatório se baseia teve como objetivo produzir, coletar, organizar e analisar informações relativas à percepção de medo, em especial o impacto que a violência e criminalidade produz no sentimento de segurança da população dos municípios do Estado de Minas Gerais, nos anos de 2008 e 2009. Esta pesquisa ocorreu em duas etapas. Essa técnica tem como objetivo de mensurar uma variação na percepção de medo da população mineira.
+
+Amostra: Decidiu-se alocar 1500 entrevistas na capital Belo Horizonte, 1000 em nas cidades da RMBH, 1150 em nos municípios pólos regionais das macrorregiões e 1550 no restante do estado de Minas Gerais, entre as cidades pequenas (com população menor que 10 mil habitantes).
+
+Fonte de Coleta: Metodologia de survey- entrevista em uma amostra de determinada população.
+
+Período de Coleta: Na primeira etapa, foram realizadas entrevistas entre os meses de abril e junho do ano de 2008. Na segunda etapa foi realizada uma nova enquete entre os meses de agosto a novembro do ano de 2009, com as mesmas pessoas entrevistadas no ano de 2008.
+
+Data de Conclusão: 2010
+
+Formato do Banco de Dados: (.sav) SPSS.
+
+Contém livro de códigos ("P_08_Livro-de-códigos-2009")
+
+Download: 
+
+Data: 27/02/2018
+Link: http://www.crisp.ufmg.br/pesquisas/#homicidiosBrasil

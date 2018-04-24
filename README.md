@@ -1,6 +1,6 @@
 # Curso_2018_ENAP
 
-# Fundamentos de análise estatística aplicada em R
+## Fundamentos de análise estatística aplicada em R
 
 * Professores: Raquel D'Albuquerque e Lucas Gelape
 
@@ -8,14 +8,14 @@ O objetivo do curso é dar aos alunos competência em análise estatística desc
 
 O conteúdo do curso se concentra na análise estatística descritiva: apresentação gráfica de dados, distribuições de frequência (absoluta, relativa e acumulada), medidas de tendência central, medidas de variabilidade, medidas de posição e análise descritiva de tabelas de contingência utilizando o software R.
 
-## Metodologia
+### Metodologia
 
 - Aulas expositivas e exercícios.  
 - Demonstrações e exercícios com utilização do R.
 - Material didático e exercícios produzidos com base na bibliografia de Introdução à Estatística.
 - Demonstrações práticas em bases de dados secundários referentes a questões sociais disponíveis nas plataformas de acesso livre online.
 
-## Plano do curso
+### Plano do curso
 
 - [Aula 1](https://github.com/lgelape/Curso_2018_ENAP/blob/master/Aulas/Ponto1.Rmd): Introdução ao R
 - [Aula 2](https://github.com/lgelape/Curso_2018_ENAP/blob/master/Aulas/Ponto2.Rmd): Carregar e visualizar bancos de dados

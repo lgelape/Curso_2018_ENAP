@@ -1,0 +1,10 @@
+Votação Partido - Município e Zona - MG, 2016
+
+Arquivo .txt com os resultados das eleições municipais de 2016 da votação em partido por município e zona eleitoral (cargos de vereador e prefeito) no estado de Minas Gerais.
+
+Contém livro de códigos ("LEIAME").
+
+Download: 
+
+Data: 27/02/2018
+Link: http://agencia.tse.jus.br/estatistica/sead/odsele/votacao_partido_munzona/votacao_partido_munzona_2016.zip

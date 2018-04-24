@@ -1,0 +1,330 @@
+---
+title: "Ponto 3"
+author: "Lucas Gelape"
+date: "Abril de 2018"
+output: html_document
+---
+
+# 3. Organizar e exportar bancos de dados
+
+Podemos manipular as informações de um banco de dados utilizando funções do R base. Contudo, utilizaremos aqui algumas funções desenvolvidas posteriormente, no pacote `dplyr` que são bastante úteis para esse objetivo. Ocasionalmente, apresentarei alguns elementos do R base que realizam procedimentos semelhantes.
+
+As funções mais relevantes aqui são:
+
+* `rename`
+* `select`
+* `mutate`
+* `filter`
+* `group by` e `summarise`
+* `arrange`
+
+Além delas, também trabalharemos com os `join` que são úteis para unir bancos de dados diferentes.
+
+Então, para começar nosso trabalho, não podemos nos esquecer de carregar este pacote.
+
+```{r setup_1, message=FALSE}
+library(dplyr)
+```
+
+Retomamos nosso conteúdo abrindo o banco que utilizamos ontem. Vamos aproveitar e estabelecer o nosso diretório de trabalho.
+
+```{r setup, include=FALSE, cache=FALSE}
+require("knitr")
+opts_knit$set(root.dir = '/Users/lucasgelape/Downloads/2018_ENAP/Bancos/')
+```
+
+```{r setup_3, eval=FALSE}
+getwd()
+setwd("2018_ENAP/Bancos")
+```
+```{r setup_4}
+banco <- read.csv2("AtlasBrasil/AtlasBrasil_Consulta1.csv", encoding = "latin1")
+```
+
+## 3.1 Renomear variáveis
+
+Como vimos ao final da última parte, o banco com o qual trabalharemos está com nomes de variáveis que vão contra as boas práticas do R. Sendo assim, é altamente recomendável renomear as variáveis desse banco. Vamos checar o nome das nossas variáveis:
+
+```{r renomear_1}
+names(banco)
+```
+
+A função `rename` nos permite renomear cada variável individualmente, ou com um mesmo comando renomear mais de uma váriavel
+
+```{r renomear_2}
+banco <- rename(banco, municipios = Espacialidades)
+
+banco <- rename(banco, cod = Código, gini_1991 = Índice.de.Gini.1991, gini_2000 = Índice.de.Gini.2000,
+                gini_2010 = Índice.de.Gini.2010, poptot_1991 = População.total.1991,
+                poptot_2000 = População.total.2000, poptot_2010 = População.total.2010,
+                renda_pc_1991 = Renda.per.capita.1991, renda_pc_2000 = Renda.per.capita.2000,
+                renda_pc_2010 = Renda.per.capita.2010, perc_pobres_1991 = X..de.pobres.1991,
+                perc_pobres_2000 = X..de.pobres.2000, perc_pobres_2010 = X..de.pobres.2010)
+                
+names(banco)
+```
+
+Com o R base, podemos usar `names` e o subsetting com o mesmo objetivo:
+
+```{r renomear_3}
+names(banco)[1] <- "codigo"
+names(banco)[1]
+names(banco)
+```
+
+Também com a função `names`, podemos mudar o nome de todas as variáveis. Isto pode ser útil para o caso de ser necessario mudar um grande número de variáveis de uma só vez. Percebem a diferença na extensão do código.
+
+```{r}
+names(banco) <- c("codigo", "munic", "gini_91", "gini_00", "gini_10",
+                  "pop_91", "pop_00", "pop_10", "rendapc_91", "rendapc_00",
+                  "rendapc_10", "pobres_91", "pobres_00", "pobres_10") 
+names(banco)
+str(banco)
+```
+
+Alguns cuidados porém são necessários ao se usar a função do R base. Ao sobrescrevermos `names`, o código deve manter a ordem original das variáveis, enquanto o uso de `rename` permite colocá-las em qualquer ordem.
+
+## 3.2 Excluir e selecionar variáveis
+
+A função do `dplyr` para selecionar variáveis é a mesma utilizada para excluí-las: `select`.
+
+No banco com o qual estamos trabalhando, vimos que a variável `codigo` não apresenta nenhuma informação relevante. Dessa forma, podemos excluí-la.
+
+```{r excluir_1}
+banco <- select(banco, -codigo)
+names(banco)
+```
+
+Com a mesma função, podemos selecionar somente algumas variáveis para permanecerem no banco. Ou, até mesmo, criar um novo banco que contenha somente tais variáveis, preservando assim o banco original na memória temporária do R (lembre-se que, enquanto você não sobrescrever o arquivo original no seu computador, ele permanece inalterado). 
+
+Vamos então criar um banco que contenha as variáveis referentes ao índice de Gini e os municípios correspondentes.
+
+```{r excluir_2}
+banco_gini <- select(banco, munic, gini_91, gini_00, gini_10)
+head(banco_gini)
+```
+
+## 3.3 Modificar variáveis
+  
+A função `mutate` é utilizada para transformar variáveis. Portanto, ela serve tanto para a criação de novas quanto para a modificação de variáveis já existentes.
+
+Vamos começar pela criação de uma nova variável: a UF do município. Aqui, introduziremos também duas novas funções, a `substr` e a `nchar`. Além deles, veremos pela primeira vez o `%>%`, um operador extremamente útil para se usar em conjunto com o `dplyr`. Ele "carrega" as informações anteriores como base para o comando que será feito em sequência. Para saber mais sobre `%>%`, você pode consultar [esse material em português do *Curso-R*](http://material.curso-r.com/pipe/) ou também [esse tutorial em inglês no *Datacamp*](https://www.datacamp.com/community/tutorials/pipe-r-tutorial).
+
+```{r modificar_1}
+banco <- banco %>%
+  mutate(munic = as.character(munic)) %>%
+  mutate(uf = substr(munic, nchar(munic) - 3, nchar(munic)))
+
+head(banco$uf)
+```
+
+Perceberam a mudança? Agora temos uma variavel chamada `uf`, que contém a unidade da federação à qual pertence o município. Porém, ela está entre parênteses... Isso não é um problema, pois já sabemos como resolver!
+
+```{r modificar_2}
+banco <- banco %>%
+  mutate(uf = substr(uf, nchar(uf) - 2, nchar(uf) - 1))
+
+head(banco$uf)
+```
+
+Aproveitando nosso embalo, vamos corrigir as observações com o nome dos municípios? Agora que existe uma variável com a UF, não é mais necessário que o nome dos municípios contenha as suas UF...
+
+```{r modificar_3}
+banco <- banco %>%
+  mutate(munic = substr(munic, 1, nchar(munic) - 4))
+```
+
+Dando um passo atrás: para aqueles com maior mania de organização, basta usar a função `select` para reorganizar a ordem das variáveis.
+
+```{r modificar_4}
+banco <- select(banco, munic, uf, gini_91, gini_00, gini_10,
+                       pop_91, pop_00, pop_10, rendapc_91,
+                       rendapc_00, rendapc_10, pobres_91,
+                       pobres_00, pobres_10)
+```
+
+Sendo assim, vemos que a função `mutate` é uma boa opção para recodificar variáveis. Por exemplo, vamos agora recodificar a variável `uf` segundo a região do país, criando a variável região. O código ' um pouco longo, mas sua lógica nao é complexa.
+
+```{r modificar_5}
+banco <- banco %>%
+  mutate(regiao = ifelse(uf == "MA" | uf == "PI" | uf == "SE" | uf =="AL"| 
+                         uf == "RN" | uf == "BA" | uf == "CE" | uf =="PB"|
+                         uf == "PE", "Nordeste", uf)) %>%
+  mutate(regiao = ifelse(uf == "PA" | uf == "TO" | uf == "AM" | uf =="AP"|
+                         uf == "AC" | uf == "RO" | uf == "RR" , "Norte", regiao)) %>%
+  mutate(regiao = ifelse(uf == "MG" | uf == "ES" | uf == "RJ" | uf == "SP",
+                         "Sudeste", regiao)) %>% 
+  mutate(regiao = ifelse(uf == "PR" | uf == "SC" | uf == "RS" , "Sul", regiao)) %>%
+  mutate(regiao = ifelse(uf == "DF" | uf == "MT" | uf == "MS" | uf == "GO",
+                         "Centro-Oeste", regiao))
+```
+
+Para fazer isso, utilizamos a função `ifelse` que funciona como um teste lógico, com a seguinte estrutura: `ifelse(se X é verdadeiro, então Y, senão Z)`. No caso da parte inicial do código: se a uf for igual ao Maranhão ou Piauí ou Sergipe ou [...], então Nordeste, senão mantenha o valor informado na uf. Além disso, percebam que usamos o operador relacional `|`, que significa "ou". Operadores relacionais são muito úteis e você pode ler um pouco mais sobre eles neste [tutorial do curso do Leonardo Barone](https://github.com/leobarone/FLS6397/blob/master/tutorials/tutorial3.Rmd).
+
+Podemos também recodificar variáveis numéricas, com o auxílio da função `cut`. Digamos que queremos transformar as variáveis contínuas referentes ao índice de Gini em variaveis categóricas, com 3 categorias. Os valores de referência são: x < 0.4 baixa, 0.4 < x < 0.7 media, e x > 0.7 alta. A função `cut` permite estabelecer diferentes cortes para classificar a variável.
+
+```{r modificar_6}
+banco <- banco %>% 
+  mutate(gini_91_cat = cut(gini_91, c(0.0, 0.4, 0.7, 1.0), 
+                           c("Baixa", "Media", "Alta"))) %>%
+  mutate(gini_00_cat = cut(gini_00, c(0.0, 0.4, 0.7, 1.0), 
+                           c("Baixa", "Media", "Alta"))) %>%
+  mutate(gini_10_cat = cut(gini_10, c(0.0, 0.4, 0.7, 1.0), 
+                           c("Baixa", "Media", "Alta")))
+```
+
+## 3.4 Filtrar ou selecionar observações
+
+As funções `slice` e `filter` são utilizadas para "fatiar" observações. Isto é, para selecionar somente algumas linhas do banco de dados a serem preservadas.
+
+A `slice` faz esta seleção por meio do número das linhas do banco. Ela será útil para algo que provavelmente vem incomodando vocês: a primeira linha do nosso banco de dados apresenta os valores para o Brasil, não sendo portanto um município, que é a unidade de análise de nosso interesse. Vamos então retirar esta observação do nosso banco de dados, primeiro com o `slice` e depois com o `filter`.
+
+```{r filtrar_1}
+banco2 <- slice(banco, -1)
+head(banco2, n = 3)
+```
+```{r filtrar_2, echo=FALSE}
+rm(banco2)
+```
+
+Como vocês podem ver, a primeira observação de nosso banco agora é aquela referente ao município de Abadia de Goiás! Para fazer o mesmo usando o `filter`, vamos utilizar outro operador relacional, o `!=`.
+
+```{r filtrar_3}
+banco <- filter(banco, munic != "Br")
+head(banco, n = 3)
+```
+
+O que estamos fazendo aqui é selecionar todas aquelas observações do banco cujo "valor" da variável `munic` é *diferente* de `"Br"`. Restam portanto todas as observações para os municípios brasileiros, exceto a observação `"Br"` que tinha dados agregados para todo o país.
+
+Para fixar, vamos fazer outra filtragem do nosso banco. Suponha que queremos gerar um banco (chamado `banco_ne`) somente com as observações do Nordeste. Lembrem-se que, anteriormente, criamos uma variável indicando a região do país a qual determinado município pertence (denominada `regiao`).
+
+```{r filtrar_4}
+banco_ne <- banco %>%
+  filter(regiao == "Nordeste")
+head(banco_ne, n = 3)
+```
+
+E se quisermos somente os municípios com populacao acima de 100.000 pessoas em 2010? Perceba que a `filter` **sempre** utiliza operadores relacionais.
+
+```{r filtrar_5}
+banco_100k_2010 <- banco %>%
+  filter(pop_10 > 100000)
+head(banco_100k_2010, n = 3)
+```
+
+## 3.5 União de bancos de dados
+
+Agora podemos passar a outra interessante ferramenta do `dplyr`, os joins. Apesar do R base também possuir funções que servem para unir bancos de dados, as funções do `dplyr` são mais dinâmicas.
+
+Vamos abrir um banco a ser unido com aquele que vínhamos trabalhando. Trata-se de um banco de dados também retirado do Atlas Brasil, e já organizado segundo as mesmas especificações que utilizamos no nosso primeiro banco.
+
+```{r uniao_1}
+banco2 <- read.csv2("AtlasBrasil/AtlasBrasil_Consulta3_tratado.csv") %>%
+  mutate(munic = as.character(munic))
+str(banco2)
+```
+
+O `join` mais comum para a união de bancos é o `left_join`. Nele, o foco está no primeiro banco: todas as suas observações serão incluídas no banco unido. Já do segundo banco serão extraídas somente as colunas. Além disso, por óbvio, é necessária uma (ou mais) variável *identidade*. Em caso de variáveis com o mesmo nome e não indicadas como variáveis identidade, ambas serão incluédas no banco final (como `variavel.x` e `variavel.y`. Para unir nossos bancos, a variável identidade é `munic`.
+
+```{r uniao_2}
+banco_unido <- left_join(banco, banco2, by = "munic")
+head(banco_unido)
+```
+
+Porém, ao observamos um panorama da base, vemos que a variável `uf` se repete. Sendo assim, ela existe na forma `uf.x` e `uf.y`. Podemos então também utilizá-la como variável identidade. Vale ressaltar que não é só porque elas têm o mesmo nome que sua utilização com esses fins é adequada. Além do nome idêntico, a informação deve ser a mesma (duas variáveis chamadas `nome`, por exemplo, poderiam conter o nome do município e o nome do seu prefeito. Apesar do mesmo nome, elas não seriam adequadas para a união. Inclusive, a melhor prática recomenda que sejam renomeadas) - inclusive, é adequado verificar se a informação é a mesma e se ela é consistente (se os nomes não estão escritos com grafia diferente, por exemplo).
+
+```{r uniao_3, warning=FALSE}
+banco_unido <- left_join(banco, banco2,
+                         by = c("munic", "uf"))
+head(banco_unido)
+```
+
+Temos agora um banco sem variáveis "duplicadas", e com as 6 novas variáveis advindas do `banco2`!
+
+Posteriormente, leiam na ajuda da função join (`?join`) um pouco sobre os diferentes tipos de união que o `dplyr` proporciona. Elas podem ser úteis dependendo dos objetivos da análise.
+
+## 3.6 Trabalhando com *missing data*
+
+Muitas vezes, podem faltar informações sobre algumas observações dos bancos de dados com os quais trabalhamos. Trata-se dos conhecidos dados faltantes (*missing data*).
+
+Se não sabemos quais dados estão ausentes, como identificá-los, especialmente em bases com muitas observações?
+
+A função `na.fail` nos diz se certo objeto contém algum `NA`. No caso de existência de `NA`, ela retorna uma mensagem de erro. Caso não exista `NA`, ela retorna o objeto original.
+
+```{r na_1, eval=FALSE}
+na.fail(banco_unido)
+na.fail(banco_unido$pobres_91)
+na.fail(banco_unido$rendapc_91)
+```
+
+Já o comando abaixo, que utiliza a função `complete.cases` realiza uma seleção de todas as linhas do banco que não estão completas (no caso, elas estão sendo guardadas no objeto `missing_data`. Isto é, ele nos indica todas as linhas que possuem ao menos 1 `NA`.
+
+```{r na_2}
+missing_data <- banco_unido[!complete.cases(banco_unido),]
+```
+
+Contudo, se desejamos olhar para uma única variavel, podemos também usar a função `is.na`, que pode ser compreendida como uma pergunta: isto é um `NA`? Com a funcão `summary`, temos um resumo das respostas.
+
+```{r na_3}
+missing_data <- is.na(banco_unido$pobres_91)
+summary(missing_data)
+```
+
+```{r na_4}
+missing_data <- is.na(banco_unido$rendapc_91)
+summary(missing_data)
+```
+
+Como tratar esse `missing data`? Isto dependerá dos fins da sua análise. Por vezes, será importante mantê-los no banco, mas em outros momentos podemos descartá-los. A função `na.omit` exclui as observações que contêm NA de uma base.
+
+```{r na_5}
+excluir_na <- na.omit(banco_unido)
+```
+
+Devemos ser muito cautelosos com a exclusão de observações de bases de dados. Veremos que diversas funções do R apresentam argumentos que permitem omitir os `NA` do cálculo de certas estatísticas. Sendo assim, eles não distorceriam os resultados mas seriam preservados no banco. É extremamente importante que sejam relatados os motivos e quais observações foram retiradas de um banco de dados, de forma a evitar erros nas análises.
+
+## 3.7 Exportar bancos de dados
+
+Até aqui, percorremos um longo caminho com nosso banco de dados. Renomeamos, criamos, modificamos, recodificamos e alteramos variáveis e também fizemos uma união de dois bancos diferentes.
+
+Porém, todo este trabalho está guardado somente na memória temporária desta sessão do R. Para utilizá-lo posteriormente ou compartilhá-lo com outras pessoas, temos que exportar esses bancos. O R permite que realizemos tais exportações em arquivos de diferentes formatos. A gramática básica deles é semelhante àquela utilizada para abrir os bancos no programa. Mas, ao contrário de `read.X`, usaremos `write.X`.
+
+Uma boa opção é exportar o arquivo em extensão `.csv`. Trata-se de um formato leve, que pode ser aberto em Excel, e facilmente aberto posteriormente no R.
+
+```{r exportar_1}
+write.csv(banco_unido, "banco_unido.csv", row.names = F)
+```
+
+O argumento `row.names = F` evita que o R crie uma coluna com o número de cada observação no arquivo exportado.
+
+O pacote `foreign` e o `readstata` nos permitem exportar as bases em outros formatos que podem ser úteis:
+
+```{r exportar_2, warning=FALSE}
+library(foreign)
+write.dta(banco_unido, "banco_unido.dta") # exporta em .dta (Stata 6-12)
+write.foreign(banco_unido, "banco_unido.txt", "banco_unido.sps",
+              package="SPSS")
+
+library(readstata13)
+save.dta13(banco_unido, "banco_unido_stata13.dta")
+```
+
+# Resumo do conteúdo trabalhado:
+
+* Começamos esta parte do conteúdo renomeando variáveis (com `rename` ou com `names`).
+
+* Utilizando a função `select`, excluímos e selecionamos variáveis.
+
+* A função `mutate` nos abriu um amplo leque de possibilidades: criar, modificar e recodificar variáveis.
+
+* Usamos as funções `filter` e `slice` para selecionar partes do banco.
+
+* Discutimos as possibilidades de uniões de bancos de dados e fizemos um `left_join`.
+
+* Exploramos o tratamento de *missing data* em nossos bancos.
+
+* Exportamos o nosso banco de dados, devidamente organizado, em diferentes formatos.
+
+### Orientações Finais
+
+Faça a [prática 3](link) e revise o conteúdo deste script. Entre em contato caso existam quaisquer dúvidas.

@@ -1,8 +1,7 @@
-# Curso_2018_ENAP
-
-## Fundamentos de análise estatística aplicada em R
+# Fundamentos de análise estatística aplicada em R
 
 * Professores: Raquel D'Albuquerque e Lucas Gelape
+* ENAP, Brasília, 1º semestre de 2018
 
 O objetivo do curso é dar aos alunos competência em análise estatística descritiva (univariada e bivariada) de dados políticos e sociais com R.
 

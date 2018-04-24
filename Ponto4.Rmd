@@ -1,0 +1,361 @@
+---
+title: "4. Estatísticas descritivas e tabelas de frequência"
+author: "Lucas Gelape"
+date: "Abril de 2018"
+output: html_document
+---
+
+# 4. Estatísticas descritivas e tabelas de frequência
+
+O cálculo de estatísticas descritivas no R é simples. Existem funções para o cálculo das principais, além de funções que apresentam um resumo destas.
+
+Para calculá-las, voltaremos ao banco cuja organização finalizamos ontem:
+
+```{r setup_1, include=FALSE, cache=FALSE}
+require("knitr")
+opts_knit$set(root.dir = '/Users/lucasgelape/Downloads/2018_ENAP/Bancos/')
+```
+
+```{r setup_2}
+banco <- read.csv("banco_unido.csv", stringsAsFactors = F)
+```
+
+O argumento `stringsAsFactors = F` evita que o R abra o seu banco lendo as strings (textos) como se fossem da classe `factor`. A classe `factor` é apropriada para se trabalhar com variáveis categóricas. Contudo, elas trazem um elemento adicional de complexidade, desnecessária para as análises que conduzimos aqui. Sendo assim, o ideal é que todas as nossas variáveis de texto sejam lidas como `character`.
+
+## 4.1.1 Média e Mediana
+
+Começaremos com o cálculo de estatísticas descritivas de variáveis contínuas. As funções para o cálculo da média e da mediana são justamente a sua tradução para o inglês.
+
+
+```{r media_1, eval=FALSE}
+mean(banco$mortalidade_91)
+median(banco$mortalidade_91)
+
+mean(banco$pobres_91)
+median(banco$pobres_91)
+```
+
+Ora, o resultado da média e da mediana da variável `pobres_91` foi `NA`, tendo em vista que existem dados faltantes para essa variável. Para resolver isso sem a necessidade de exclusão das observações do banco, podemos incluir o argumento `na.rm = TRUE`. Ele indicará que o R deve remover os NA para o comando em questão.
+
+```{r media_2}
+mean(banco$pobres_91, na.rm = TRUE)
+median(banco$pobres_91, na.rm = T)
+```
+
+Todas as funções que serão vistas nesse ponto 4 para estatísticas descritivas apresentam este argumento 
+`na.rm`, cuja convenção e `na.rm = FALSE`. Sendo assim, é importante conhecer o banco, verificar se ele possui NAs que possam interferir na análise, e retirá-los do cálculo dessas estatísticas.
+
+## 4.1.2 Mínimo e máximo
+
+Tais estatísticas são úteis para a compreensão do ordenamento e alcance dos valores de uma variável contínua.
+
+```{r minimo_1, eval=FALSE}
+min(banco$gini_91)
+max(banco$gini_91)
+
+range(banco$gini_91) # apresenta os valores minimo e maximo
+range(banco$gini_00)
+range(banco$gini_10)
+```
+
+## 4.1.3 Quantis
+
+O R nos dá grande flexibilidade para o cálculo de quantis. Para tanto, usamos a função `quantiles`. Geralmente, os quantis utilizados para descrever uma distribuição são os *quartis*.
+
+```{r quantis_1, eval=FALSE}
+# Quartis
+quantile(banco$pop_10, probs = seq(0, 1, 0.25))
+quantile(banco$pop_10, probs = c(0, 0.25, 0.5, 0.75, 1))
+
+# Quintis
+quantile(banco$pop_10, probs = seq(0, 1, 0.2))
+quantile(banco$pop_10, probs = c(0, .2, .4, .6, .8, 1))
+
+# Decis
+quantile(banco$pop_10, probs = seq(0, 1, .1))
+quantile(banco$pop_10, probs = c(0, 0.1, 0.2, 0.3, 0.5,
+                                 0.6, 0.7, 0.8, 0.9, 1))
+
+# Percentis
+quantile(banco$pop_10, probs = seq(0, 1, 0.01))
+```
+
+Não se esqueçam de que podemos guardar essas informações em um objeto!
+
+```{r quantis_2}
+quartis_pop10 <- quantile(banco$pop_10, probs = seq(0, 1, 0.25))
+quartis_pop10
+```
+
+O objeto é manipulável. Podemos, então, alterar o nome de cada elemento deste vetor:
+
+```{r quantis_3}
+names(quartis_pop10) <- c("Mínimo", "1º Quartil", "Mediana", "3º Quartil", "Máximo")
+quartis_pop10
+```
+
+A função `IQR` calcula o intervalo interquartil (IIQ), a diferença entre os valores do terceiro e do primeiro quartil da distribuição.
+
+```{r quantis_4, eval=FALSE}
+IQR(banco$pop_10)
+```
+
+## 4.1.4 Variância e Desvio-Padrão
+
+O cálculo da variância e do desvio-padrão seguem a mesma lógica das funções anteriores.
+
+```{r var_1, eval=FALSE}
+var(banco$mortalidade_91)
+sd(banco$mortalidade_91)
+
+var(banco$mortalidade_00)
+sd(banco$mortalidade_00)
+
+var(banco$mortalidade_10)
+sd(banco$mortalidade_10)
+```
+
+## 4.1.5 Juntando varias estatísticas descritivas numa tabela
+
+Sabemos que podemos guardar as informações dessas estatísticas em objetos. Assim, poderíamos pensar em salvar objetos com cada um desses valores. É possível ainda juntar todos em um único vetor, nomeando os elementos. Assim, ela adquire o mesmo formato de uma tabela!
+
+Primeiro, vamos fazer isso para as seguintes estatísticas da variavel `pop_91`: média, mediana, mínimo, máximo, quartis e desvio-padrão.
+
+```{r desc_tabela_1}
+media_pop91 <- mean(banco$pop_91)
+
+# Vimos que a funcao quantile consegue nos retornar os valores de minimo, quartis, mediana e maximo.
+quartis_pop91 <- quantile(banco$pop_91, probs = seq(0, 1, 0.25))
+
+desvio_pop91 <- sd(banco$pop_91)
+
+# Podemos ate incluir o n. de obs. se quisermos (aqui e importante prestar atencao em NAs)
+
+n_pop91 <- nrow(banco)
+  
+# Vamos junta-las em um unico vetor
+
+descritivas_pop91 <- c(media_pop91, desvio_pop91, n_pop91,
+                       quartis_pop91)
+
+# Em seguida, vamos renomear seus elementos
+
+names(descritivas_pop91) <- c("Média", "Desvio-Padrão", "N. de obs.",
+                              "Mínimo", "1º Quartil", "Mediana",
+                              "3º Quartil", "Máximo")
+descritivas_pop91
+```
+
+Esse vetor pode ser exportado por meio do pacote `stargazer`. Este pacote permite a exportação de tabelas em diferentes formatos.
+
+```{r desc_tabela_2, eval=FALSE}
+library(stargazer)
+
+stargazer(descritivas_pop91, type = "html", out = "descritivas_pop91.html",
+          decimal.mark = ",", digit.separate = 3, digit.separator = ".")
+```
+
+Em nosso banco, estamos trabalhando com variáveis correspondentes a 3 censos diferentes. Sendo assim, pode ser importante comparar as estatisticas descritivas de 3 variáveis numa mesma tabela. Para tanto, podemos criar um `data.frame` a partir dos objetos com as estatísticas descritivas de cada uma delas!
+
+```{r desc_tabela_3}
+# pop_00
+media_pop00 <- mean(banco$pop_00)
+quartis_pop00 <- quantile(banco$pop_00, probs = seq(0, 1, 0.25))
+desvio_pop00 <- sd(banco$pop_00)
+n_pop00 <- nrow(banco)
+descritivas_pop00 <- c(media_pop00, desvio_pop00, n_pop00,
+                       quartis_pop00)
+
+names(descritivas_pop00) <- c("Média", "Desvio-Padrão", "N. de obs.",
+                              "Mínimo", "1º Quartil", "Mediana",
+                              "3º Quartil", "Máximo")
+
+# pop_10
+media_pop10 <- mean(banco$pop_10)
+quartis_pop10 <- quantile(banco$pop_10, probs = seq(0, 1, 0.25))
+desvio_pop10 <- sd(banco$pop_10)
+n_pop10 <- nrow(banco)
+descritivas_pop10 <- c(media_pop10, desvio_pop10, n_pop10,
+                       quartis_pop10)
+
+names(descritivas_pop10) <- c("Média", "Desvio-Padrão", "N. de obs.",
+                              "Mínimo", "1º Quartil", "Mediana",
+                              "3º Quartil", "Máximo")
+
+# Criando o banco de dados "empilhando" as 3 variaveis
+
+descritivas_pop <- data.frame(descritivas_pop91,
+                              descritivas_pop00,
+                              descritivas_pop10)
+
+descritivas_pop <- round(descritivas_pop, digits = 0) # a funcao round arredonda os valores
+
+descritivas_pop
+```
+
+Se não estivermos satisfeitos com o formato, podemos usar a funcão `t` para transpor esse banco:
+
+```{r desc_tabela_4}
+descritivas_pop <- t(descritivas_pop)
+```
+
+Por fim, renomeamos o nome de cada linha do banco e assim temos uma tabela pronta para ser exportada. Caso tivéssemos mantido a tabela em sua estrutura original teriamos que mudar o nome das variáveis e não das linhas.
+
+```{r desc_tabela_5}
+row.names(descritivas_pop) <- c("População Total - 1991",
+                                "População Total - 2000",
+                                "População Total - 2010")
+descritivas_pop
+```
+
+E, caso necessário, exportamos a tabela:
+
+```{r desc_tabela_6, eval=FALSE}
+stargazer(descritivas_pop, type = "html", out = "descritivas_pop.html",
+          decimal.mark = ",", digit.separate = 3, digit.separator = ".")
+```
+
+## 4.1.6 Resumo de estatísticas descritivas
+
+Discutimos primeiro como construir as proprias tabelas de estatísticas descritivas porque as funções com resumos dessas estatísticas são incompletas. Dessa forma, temos as ferramentas para construirmos o resumo que acharmos mais útil para nossos fins.
+
+A função `summary`, do R base, nos retorna o mínimo, 1o quartil, mediana, média, 3o quartil e máximo da distribuição de uma variável.
+
+```{r resumo_1}
+summary(banco$gini_91)
+```
+
+Ela também apresenta um resumo de todas as variáveis do banco:
+
+```{r resumo_2, eval=FALSE}
+summary(banco)
+```
+
+Uma função semelhante, porém mais completa, é a `describe` do pacote `psych`.
+
+```{r resumo_3}
+library(psych)
+describe(banco$gini_91)
+```
+
+Podemos usar as ferramentas de manipulação de vetores, que já conhecemos, para selecionar somente as informações que nos interessam.
+
+```{r resumo_4}
+descritivas_gini91 <- describe(banco$gini_91)
+
+# Vamos selecionar somente os elementos n, mean, sd, median, min, max e range:
+
+descritivas_gini91 <- descritivas_gini91[c("n", "mean", "sd", "median", 
+                                           "min", "max", "range")]
+
+# Agora, basta renomear a linha e as colunas e temos uma tabela pronta para ser exportada
+
+names(descritivas_gini91) <- c("N. obs.", "Média", "Desvio-Padrão",
+                               "Mediana", "Mínimo", "Máximo", "Amplitude")
+row.names(descritivas_gini91) <- "Índice de Gini - 1991"
+descritivas_gini91
+```
+
+## 4.2 Tabelas de Frequência
+
+Para criar tabelas de frequência, vamos apresentar outras importantes funções do `dplyr`, com a qual não trabalhamos antes: a `group_by` e a `summarise`. 
+
+Geralmente, essas funções são utilizadas em conjunto. A `group_by` organiza os dados do banco em grupos de determinada variável. E a `summarise` nos dará um "resumo" deste grupo, segundo nosso objetivos (comumente usamos a média, soma ou contagem de casos).
+
+Na última aula, criamos duas variáveis categóricas que podemos utilizar aqui para gerar tabelas de frequência: região e as faixas do Gini. Vamos comecar pela região. Podemos calcular a média de 
+renda *per capita* em 2010 para cada região do país:
+
+```{r tabelas_1, message=FALSE}
+library(dplyr)
+
+renda_regiao <- banco %>%
+  group_by(regiao) %>%
+  summarise(rendapc_10 = mean(rendapc_10)) %>%
+  mutate(rendapc_10 = round(rendapc_10, digits = 2))
+renda_regiao
+```
+
+Ou então o somatório da população de cada região em 2000:
+
+```{r tabelas_2}
+pop_regiao00 <- banco %>%
+  group_by(regiao) %>%
+  summarise(pop_00 = sum(pop_10))
+pop_regiao00
+```
+
+Podemos ainda contar o número de cidades em cada região ou nos estados:
+
+```{r tabelas_3}
+munic_regiao <- banco %>%
+  group_by(regiao) %>%
+  summarise(n_munic = n())
+munic_regiao
+
+munic_uf <- banco %>%
+  group_by(uf) %>%
+  summarise(n_munic = n())
+munic_uf
+```
+
+Contudo, tabelas de frequência com contagem simples são mais facilmente realizadas com funções do R base:
+
+```{r tabelas_4}
+table(banco$regiao)                   # frequencia absoluta
+prop.table(table(banco$regiao)) * 100 # frequencia relativa
+
+table(banco$uf)
+prop.table(table(banco$uf)) * 100
+```
+
+Por fim, nós podemos fazer um cruzamento de 2 variáveis categóricas numa mesma tabela:
+
+```{r tabelas_5}
+gini10_regiao <- banco %>%
+  group_by(regiao, gini_10_cat) %>%
+  summarise(municipios = n())
+gini10_regiao
+
+table(banco$regiao, banco$gini_10_cat)
+prop.table(table(banco$regiao, banco$gini_10_cat)) * 100
+```
+
+Obviamente, essas tabelas podem ser exportadas. A versão produzida com as funções do `dplyr` é exportada pelo `stargazer` num formato mais "amigável".
+
+```{r tabelas_6, eval=FALSE}
+tabela_gini10regiao <- table(banco$regiao, banco$gini_10_cat)
+stargazer(tabela_gini10regiao, type = "html", out = "gini10regiao_base.html",
+          rownames = F)
+
+gini10_regiao
+stargazer(gini10_regiao, type = "html", out = "gini10regiao_dplyr.html",
+          rownames = F, summary = F)
+```
+
+# Resumo do conteúdo trabalhado:
+
+* Nesta parte, aprendemos a descrever nossas variáveis contínuas e categóricas.
+
+* Para descrever nossas variáveis contínuas, usamos as funções:
+
+    * `mean` (média);
+    * `median` (mediana);
+    * `min` (mínimo);
+    * `max` (máximo);
+    * `range` (mínimo e máximo);
+    * `quantile` (quantis);
+    * `IQR` (intervalo interquartil);
+    * `var` (variância);
+    * `sd` (desvio-padrão).
+
+* Construímos tabelas com as estatísticas descritivas calculadas com essas funções.
+
+* Aprendemos a exportar tabelas utilizando o pacote `stargazer`.
+
+* Vimos duas diferentes opções de funções que retornam um conjunto de estatísticas descritivas: a `summary` e a `describe` (do pacote `psych`).
+
+* Para descrever nossas variáveis categóricas, conhecemos as funções  `group_by` e `summarise` (do `dplyr`) e a `table` e `prop.table`, usadas para produzir tabelas de frequencia.
+
+### Orientações Finais
+
+Pratique com o conteúdo desse script e com a [prática 4](link). Faça descrições sobre outras das variáveis do banco, para ficar mais confortável com o que aprendemos. Entre em contato caso existam quaisquer dúvidas.

@@ -1,0 +1,214 @@
+---
+title: "Ponto 2"
+author: "Lucas Gelape"
+date: "Março de 2018"
+output: html_document
+---
+
+# 2. Carregar e visualizar bancos de dados
+
+O R é um software extremamente flexível no que se refere aos formatos de arquivos com os quais pode trabalhar. Dessa forma, ele consegue abrir bancos de dados oriundos de diferentes programas, de maneira simples e (na maior parte das vezes) rápida.
+
+## 2.1 Carregando bancos de dados em diferentes formatos
+
+Uma funcão "coringa" para se abrir bancos é a `read.table`.
+
+```{r carregando_1, eval=FALSE}
+?read.table
+```
+
+Para demonstrarmos como esta funcao opera, vamos abrir arquivos a partir de 2 formatos diferentes (.txt e .csv).
+
+* .txt
+
+```{r carregando_2, error=TRUE}
+banco1 <- read.table("/Users/lucasgelape/Downloads/2018_ENAP/Bancos/Votacao_MunZona_2016/votacao_partido_munzona_2016_MG.txt")
+```
+
+Ao tentarmos abrir somente com o nome do arquivo, obtemos uma mensagem de erro. Ela nos sugere que precisamos adicionar alguns argumentos a funcao para permitir que o arquivo seja lido  pelo R. Porém, quais seriam eles? 
+
+Normalmente, trata-se do argumento `sep`, que indica qual o separador das células do banco). Outros  argumentos importantes são:
+
+* `dec` estabelece qual o símbolo dos decimais;
+* `header` diz se a 1ª linha do banco traz os nomes das variáveis; 
+* `na.strings` estabelece como os missings estão escritos no banco original, e que serão traduzido para o  R como `NA`; e
+* `skip` indica o n. de linhas que deve ser pulado no inicio da leitura do banco.
+
+Porém, como descobrimos isto? No caso do banco que estamos tentando abrir, o arquivo "leia-me" contém essas informações! Caso o banco não venha acompanhado de um arquivo desse tipo, podemos abrir o arquivo e verificar tais informações. Mas, o arquivo pode ser muito grande e de difícil manuseio. Nesses casos, a tentativa e erro (ou o pedido de ajuda para algum colega que ja tenha trabalhado com o banco!) é uma opcao válida.
+
+Para este banco com os resultados eleitorais dos partidos, por município e zona eleitoral de Minas Gerais em 2016, as células estão separadas por `;`.
+
+```{r carregando_3}
+banco1 <- read.table("/Users/lucasgelape/Downloads/2018_ENAP/Bancos/Votacao_MunZona_2016/votacao_partido_munzona_2016_MG.txt", sep = ";")
+class(banco1)
+```
+
+* .csv
+
+O procedimento para bancos com extensão .csv é semelhante. Além disso, o pacote também oferece a função `read.csv` e `read.csv2` que simplificam o procedimento de abertura desses arquivos.
+
+```{r carregando_4}
+banco2 <- read.csv2("/Users/lucasgelape/Downloads/2018_ENAP/Bancos/AtlasBrasil/AtlasBrasil_Consulta1.csv", encoding = "latin1")
+```
+
+O argumento `encoding` é utilizado para [especificar a codificação](https://support.rstudio.com/hc/en-us/articles/200532197-Character-Encoding) segundo a qual os caracteres devem ser lidos. Ele foi utilizada aqui para permitir a leitura do banco sob a codificação `"latin1"`, que permite a [leitura do alfabeto latino](https://pt.wikipedia.org/wiki/ISO/IEC_8859-1). Outras opções que podem ser tentadas são a `"windows-1252"` ou a `"utf-8"`.
+
+Precisamos sempre repetir o longo caminho do arquivo?
+
+Para evitar que o código seja muito longo, facilitando sua leitura, podemos encurtar esses caminhos dos arquivos, estabelecendo nosso *diretório de trabalho*, a pasta a partir da qual o R lerá os nossos arquivos. A função `getwd` nos mostra qual o diretório de trabalho atual. Caso quisermos modificá-lo, basta usar a função `setwd` indicando qual o caminho que deve ser considerado como diretório.
+
+```{r setup, include=FALSE, cache=FALSE}
+require("knitr")
+opts_knit$set(root.dir = '/Users/lucasgelape/Downloads/2018_ENAP/Bancos/')
+```
+
+```{r carregando_5, eval=FALSE}
+setwd("C:/Users/fcslab01/Desktop/2018_ENAP/Bancos/")
+```
+
+Dessa forma, podemos reescrever o código para abrir o `banco2` como:
+
+```{r carregando_6}
+banco2 <- read.csv2("AtlasBrasil/AtlasBrasil_Consulta1.csv", encoding = "latin1")
+```
+
+E se precisarmos abrir arquivos em outros formatos?
+
+O pacote `foreign` nos dá um conjunto de funções para abrir bancos em diferentes formatos, dentre eles o .sav (SPSS) e o .dta (Stata).
+
+Ele funciona de maneira bastante simples. Suas funções geralmente são escritas como `read.EXTENSAO` - por exemplo, `read.dta` - ou `read.PROGRAMA` - exemplo, `read.spss`. Além do nome do arquivo, outros argumentos podem ser necessarios (consultem a ajuda!). 
+
+* .sav
+
+```{r carregando_7, warning=FALSE, message=FALSE}
+library(foreign) # Nao se esquecam de instalar o pacote, caso ele nao esteja instalado.
+
+banco3 <- read.spss("PercepcaoMedoMG/T075_BaseDeDados_PercepcaoDeMedo_MG_2009.sav",                                 to.data.frame = TRUE)
+
+```
+
+Você pode ver mais detalhes sobre a importação de arquivos em formato .sav [aqui](https://www.r-bloggers.com/migrating-from-spss-to-r-rstats/).
+
+* .dta
+
+O pacote `foreign` só permite abrir arquivos `.dta` correspondentes ao Stata 6-12. O pacote `readstata13` permite ler arquivos `.dta` mais recentes.
+
+```{r carregando_8, warning=FALSE}
+library(readstata13)
+banco4 <- read.dta13("Latinobarometro2016/Latinobarometro2016Esp_v20170205.dta")
+```
+
+* .xls / .xlsx (pacote `readxl`)
+
+Por fim, o pacote `readxl` possibilita a leitura de arquivos advindos do Excel. Sua função `read_excel` detecta automaticamente a extensão do arquivo e funciona de maneira semelhante às demais funções estudadas.
+
+```{r carregando_9, warning=FALSE}
+library(readxl)
+
+banco5 <- read_excel("AtlasBrasil/AtlasBrasil_Consulta1.xlsx")
+```
+
+## 2.2 Exploração inicial e visualização de bancos de dados
+
+Antes de iniciarmos a próxima etapa, vamos limpar o ambiente de trabalho. A função `rm` deve vir acompanhada do argumento `list`, que incluirá a lista de objetos a serem removidos. No caso, removeremos todos os objetos do ambiente de trabalho, que são listados pela função `ls`.
+
+```{r exploracao_1}
+rm(list = ls())
+```
+
+Em seguida, vamos abrir o banco com o qual trabalharemos até o final do curso, e que já abrimos anteriormente.
+
+```{r exploracao_2}
+banco <- read.csv2("AtlasBrasil/AtlasBrasil_Consulta1.csv", encoding = "latin1")
+```
+
+Como vimos antes, ao guardarmos as informações de um banco de dados em um objeto, podemos visualizar esse banco ao clicar no ícone correspondente. Para realizar a mesma operação por meio de um código, podemos usar a função `View`.
+
+```{r exploracao_3, eval=FALSE}
+View(banco) # nao se esquecam que o V e maiusculo!
+```
+
+Contudo, no R precisamos evitar trabalhar com um olhar constante para o banco, uma vez que uma das principais vantagens (a capacidade de se trabalhar com um alto volume de dados em relativamente pouco tempo) acabará se perdendo. 
+
+Sendo assim, para não precisarmos olhar constantemente para o banco, o R apresenta algumas funções que nos permitem "espiá-lo" e verificar, ao menos preliminarmente, se ele foi aberto de forma correta.
+
+A primeira dessas funções é a `head`, que apresenta os nomes das variaveis e algumas observações iniciais do banco em questão.
+
+```{r exploracao_4}
+head(banco)
+```
+
+Podemos aumentar o n. de obs. exibidas pelo head com o argumento `n`.
+
+```{r exploracao_5, eval=FALSE}
+head(banco, n = 10)
+```
+
+Além da `head`, temos a função `str`. Esta função nos apresenta a "estrutura interna" deste objeto. No caso, trata-se de um panorama geral do banco (n. obs. e de variáveis), e a classe de cada variável contida no banco, com valores das observações iniciais.
+
+```{r exploracao_6}
+str(banco)
+```
+
+Outra função que funciona de forma semelhante a `str` é a função `glimpse`, que pode ser utilizada quando carregamos o pacote `dplyr`.
+
+```{r exploracao_7, message=FALSE}
+library(dplyr)
+glimpse(banco)
+```
+
+Existem, por fim, funções que reportam somente as dimensões do banco:
+
+```{r exploracao_8, eval=FALSE}
+dim(banco) # n. de linhas e de colunas
+nrow(banco) # n. de linhas
+ncol(banco) # n. de colunas
+```
+
+## 2.3 Identificação de variáveis
+
+Ao explorarmos o banco com o qual estamos trabalhando, vimos que é possivel identificar, de forma geral, o nome e tipos de variáveis.
+
+Porém, por vezes é necessário identificá-los em contextos mais aplicados, que não do panorama do banco como um todo.
+
+Para verificarmos o nome de todas as variáveis do nosso banco,  podemos usar a função `names`. Essa informação pode, inclusive, ser salva num objeto,
+
+```{r identificacao_1}
+names(banco)
+
+nomes_variaveis <- names(banco)
+```
+
+E se quisermos saber qual o tipo dessa variável (categórica x contínua)? Assim como para os vetores, utilizamos a funcao `class`.
+
+A função `class` aplicada ao banco nos retorna a classe do objeto completo do banco de dados (um data.frame, portanto).
+
+```{r identificacao_2}
+class(banco)
+```
+
+Para acessarmos uma das variáveis desse banco, utilizamos o operador `$`.
+```{r identificacao_3}
+class(banco$Índice.de.Gini.1991)
+class(banco$Espacialidades)
+```
+
+Opa, a variavel 'Espacialidades' é de uma classe diferente `factor`. Esta classe é utilizada para se trabalhar com variaveis categóricas no R (assim como a `character`). Veremos um pouco mais sobre ela futuramente.
+
+Além disso, vocês devem ter observado que os nomes dessas variáveis vão contra todas as dicas que colocamos sobre como criar nomes de objetos (e, por extensão, de variáveis) no R. Como corrigir isto? Faremos isso e um pouco mais na próxima aula.
+
+# Resumo do conteúdo trabalhado:
+
+Nesta segunda parte, estudamos os seguintes conteúdos:
+
+* Abrimos arquivos de bancos de dados em diferentes formatos no R. Dentre eles, arquivos .txt, .csv, .sav, .dta e .xls.
+
+* Utilizamos algumas funções para fazer uma exploracao inicial do banco: `View`, `str` e `glimpse`.
+
+* Aprendemos como acessar os nomes e tipos das variáveis da base de dados.
+
+### Orientações Finais
+
+Reveja os comandos apresentados em aula e da [Prática 2](link).
+
+Entre em contato no caso de dúvidas!

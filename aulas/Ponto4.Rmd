@@ -13,19 +13,20 @@ Para calculá-las, voltaremos ao banco cuja organização finalizamos ontem:
 
 ```{r setup_1, include=FALSE, cache=FALSE}
 require("knitr")
-opts_knit$set(root.dir = '/Users/lucasgelape/Downloads/2018_ENAP/Bancos/')
+opts_knit$set(root.dir = '/Users/lucasgelape/Google Drive (USP)/Cursos/2018_ENAP/2_FundamentosEstatistica/Bancos/')
 ```
 
+```{r setup_3, eval=FALSE}
+getwd()
+setwd("/Users/lucasgelape/Google Drive (USP)/Cursos/2018_ENAP/2_FundamentosEstatistica/Bancos/")
+```
 ```{r setup_2}
-banco <- read.csv("banco_unido.csv", stringsAsFactors = F)
+banco <- read_csv("banco_unido.csv")
 ```
-
-O argumento `stringsAsFactors = F` evita que o R abra o seu banco lendo as strings (textos) como se fossem da classe `factor`. A classe `factor` é apropriada para se trabalhar com variáveis categóricas. Contudo, elas trazem um elemento adicional de complexidade, desnecessária para as análises que conduzimos aqui. Sendo assim, o ideal é que todas as nossas variáveis de texto sejam lidas como `character`.
 
 ## 4.1.1 Média e Mediana
 
 Começaremos com o cálculo de estatísticas descritivas de variáveis contínuas. As funções para o cálculo da média e da mediana são justamente a sua tradução para o inglês.
-
 
 ```{r media_1, eval=FALSE}
 mean(banco$mortalidade_91)
@@ -105,14 +106,14 @@ IQR(banco$pop_10)
 O cálculo da variância e do desvio-padrão seguem a mesma lógica das funções anteriores.
 
 ```{r var_1, eval=FALSE}
-var(banco$mortalidade_91)
-sd(banco$mortalidade_91)
+var(banco$mortalidade_91, na.rm = T)
+sd(banco$mortalidade_91, na.rm = T)
 
-var(banco$mortalidade_00)
-sd(banco$mortalidade_00)
+var(banco$mortalidade_00, na.rm = T)
+sd(banco$mortalidade_00, na.rm = T)
 
-var(banco$mortalidade_10)
-sd(banco$mortalidade_10)
+var(banco$mortalidade_10, na.rm = T)
+sd(banco$mortalidade_10, na.rm = T)
 ```
 
 ## 4.1.5 Juntando varias estatísticas descritivas numa tabela
@@ -254,6 +255,33 @@ names(descritivas_gini91) <- c("N. obs.", "Média", "Desvio-Padrão",
                                "Mediana", "Mínimo", "Máximo", "Amplitude")
 row.names(descritivas_gini91) <- "Índice de Gini - 1991"
 descritivas_gini91
+```
+
+Outra opção é a função `describe` do pacote `describer`. Ela faz um rersumo das estatísticas descritivas de um banco de dados. Vamos testá-la com nosso `banco` completo.
+
+```{r}
+library(describer)
+
+banco %>%
+  describe
+```
+
+Ele ficou com muita informação. Por que não selecionamos somente as variáveis que se referem ao gini?
+
+```{r}
+library(describer)
+
+banco %>%
+  select(gini_91, gini_00, gini_10) %>%
+  describe
+
+# Podemos salvar o resultado em um objeto e renomeá-lo
+
+descritivas_banco <- banco %>%
+  select(gini_91, gini_00, gini_10) %>%
+  describe
+
+names(descritivas_banco) <- c("Variável", "Classe", "Tipo", "n", "Média", "Desvio-Padrão", "Mínimo", "1o quartil", "Mediana", "3o quartil", "Máximo")
 ```
 
 ## 4.2 Tabelas de Frequência

@@ -1,7 +1,7 @@
 ---
 title: "Ponto 2"
-author: "Lucas Gelape"
-date: "Março de 2018"
+author: "Lucas Gelape e Fernando Meirelles"
+date: "Setembro de 2018"
 output: html_document
 ---
 
@@ -11,47 +11,43 @@ O R é um software extremamente flexível no que se refere aos formatos de arqui
 
 ## 2.1 Carregando bancos de dados em diferentes formatos
 
-Uma funcão "coringa" para se abrir bancos é a `read.table`.
+O R-base possui algumas funções que podemos usar para abrir bancos de dados em diferentes formatos. Uma funcão "coringa" para se abrir bancos é a `read.table`.
 
 ```{r carregando_1, eval=FALSE}
 ?read.table
 ```
 
-Para demonstrarmos como esta funcao opera, vamos abrir arquivos a partir de 2 formatos diferentes (.txt e .csv).
-
-* .txt
+Para demonstrarmos como esta função opera, vamos abrir um arquivo de extensão `.txt`
 
 ```{r carregando_2, error=TRUE}
-banco1 <- read.table("/Users/lucasgelape/Downloads/2018_ENAP/Bancos/Votacao_MunZona_2016/votacao_partido_munzona_2016_MG.txt")
+banco1 <- read.table("/Users/lucasgelape/Google Drive (USP)/Cursos/2018_ENAP/2_FundamentosEstatistica/Bancos/Votacao_MunZona_2016/votacao_partido_munzona_2016_MG.txt")
 ```
 
-Ao tentarmos abrir somente com o nome do arquivo, obtemos uma mensagem de erro. Ela nos sugere que precisamos adicionar alguns argumentos a funcao para permitir que o arquivo seja lido  pelo R. Porém, quais seriam eles? 
+Ao tentarmos abrir somente com o nome do arquivo, obtemos uma mensagem de erro. Ela nos sugere que precisamos adicionar alguns argumentos à função para permitir que o arquivo seja lido pelo R. Porém, quais seriam eles? 
 
-Normalmente, trata-se do argumento `sep`, que indica qual o separador das células do banco). Outros  argumentos importantes são:
+Normalmente, trata-se do argumento `sep`, que indica qual o separador das células do banco. Outros  argumentos importantes são:
 
 * `dec` estabelece qual o símbolo dos decimais;
 * `header` diz se a 1ª linha do banco traz os nomes das variáveis; 
 * `na.strings` estabelece como os missings estão escritos no banco original, e que serão traduzido para o  R como `NA`; e
 * `skip` indica o n. de linhas que deve ser pulado no inicio da leitura do banco.
 
-Porém, como descobrimos isto? No caso do banco que estamos tentando abrir, o arquivo "leia-me" contém essas informações! Caso o banco não venha acompanhado de um arquivo desse tipo, podemos abrir o arquivo e verificar tais informações. Mas, o arquivo pode ser muito grande e de difícil manuseio. Nesses casos, a tentativa e erro (ou o pedido de ajuda para algum colega que ja tenha trabalhado com o banco!) é uma opcao válida.
+Porém, como descobrimos isto? No caso do banco que estamos tentando abrir, o arquivo "leia-me" contém essas informações! Caso o banco não venha acompanhado de um arquivo desse tipo, podemos abrir o arquivo e verificar tais informações. Mas o arquivo pode ser muito grande e de difícil manuseio. Nesses casos, a tentativa e erro (ou o pedido de ajuda para algum colega que já tenha trabalhado com o banco!) é uma opcao válida.
 
 Para este banco com os resultados eleitorais dos partidos, por município e zona eleitoral de Minas Gerais em 2016, as células estão separadas por `;`.
 
 ```{r carregando_3}
-banco1 <- read.table("/Users/lucasgelape/Downloads/2018_ENAP/Bancos/Votacao_MunZona_2016/votacao_partido_munzona_2016_MG.txt", sep = ";")
+banco1 <- read.table("/Users/lucasgelape/Google Drive (USP)/Cursos/2018_ENAP/2_FundamentosEstatistica/Bancos/Votacao_MunZona_2016/votacao_partido_munzona_2016_MG.txt", sep = ";")
 class(banco1)
 ```
 
-* .csv
-
-O procedimento para bancos com extensão .csv é semelhante. Além disso, o pacote também oferece a função `read.csv` e `read.csv2` que simplificam o procedimento de abertura desses arquivos.
-
-```{r carregando_4}
-banco2 <- read.csv2("/Users/lucasgelape/Downloads/2018_ENAP/Bancos/AtlasBrasil/AtlasBrasil_Consulta1.csv", encoding = "latin1")
-```
+O banco de dados foi aberto como o objeto `banco1`. Está tudo certo? As variáveis de texto não parecem ter sido lidas da forma correta. Nesses casos, o mais provável é ter sido um problema de *encoding*, que em linhas bem gerais é neste caso a maneira como o texto é lido no computador.
 
 O argumento `encoding` é utilizado para [especificar a codificação](https://support.rstudio.com/hc/en-us/articles/200532197-Character-Encoding) segundo a qual os caracteres devem ser lidos. Ele foi utilizada aqui para permitir a leitura do banco sob a codificação `"latin1"`, que permite a [leitura do alfabeto latino](https://pt.wikipedia.org/wiki/ISO/IEC_8859-1). Outras opções que podem ser tentadas são a `"windows-1252"` ou a `"utf-8"`.
+
+```{r carregando_4}
+banco1 <- read.table("/Users/lucasgelape/Google Drive (USP)/Cursos/2018_ENAP/2_FundamentosEstatistica/Bancos/Votacao_MunZona_2016/votacao_partido_munzona_2016_MG.txt", sep = ";", encoding = "latin1")
+```
 
 Precisamos sempre repetir o longo caminho do arquivo?
 
@@ -59,53 +55,109 @@ Para evitar que o código seja muito longo, facilitando sua leitura, podemos enc
 
 ```{r setup, include=FALSE, cache=FALSE}
 require("knitr")
-opts_knit$set(root.dir = '/Users/lucasgelape/Downloads/2018_ENAP/Bancos/')
+opts_knit$set(root.dir = '/Users/lucasgelape/Google Drive (USP)/Cursos/2018_ENAP/2_FundamentosEstatistica/Bancos/')
 ```
 
-```{r carregando_5, eval=FALSE}
-setwd("C:/Users/fcslab01/Desktop/2018_ENAP/Bancos/")
+```{r carregando_5, eval=FALSE, warning=FALSE}
+setwd("/Users/lucasgelape/Google Drive (USP)/Cursos/2018_ENAP/2_FundamentosEstatistica/Bancos/")
 ```
 
-Dessa forma, podemos reescrever o código para abrir o `banco2` como:
+Dessa forma, podemos reescrever o código para abrir o `banco1` como:
 
-```{r carregando_6}
-banco2 <- read.csv2("AtlasBrasil/AtlasBrasil_Consulta1.csv", encoding = "latin1")
+```{r carregando_6, warning=FALSE}
+banco1 <- read.table("Votacao_MunZona_2016/votacao_partido_munzona_2016_MG.txt", sep = ";", encoding = "latin1")
+```
+
+As funções do R-base apresentam ainda uma "pegadinha". Vamos ver a checar a classe das variáveis de texto desse banco
+
+```{r carregando_7, warning=FALSE}
+class(banco1$V5)
+class(banco1$V9)
+class(banco1$V12)
+class(banco1$V14)
+```
+
+Todas elas são `factor`. Como vimos anteriormente, factors podem ser úteis para trabalhar com variáveis categóricas. Só que eles também podem nos trazer muitos problemas e em geral seria melhor que essas variáveis de texto fossem abertas como `character`. Para isso, as funções do R-base exigem um argumento adicional, especificando que as *strings* não devem ser lidas como factors, o `stringsAsFactors = F`. 
+
+```{r carregando_8, warning=FALSE}
+banco1 <- read.table("Votacao_MunZona_2016/votacao_partido_munzona_2016_MG.txt", sep = ";", encoding = "latin1", stringsAsFactors = F)
+class(banco1$V5)
+```
+
+Existem diversos pacotes no R que auxiliam no carregamento de dados fazendo com que ela seja mais simples e rápida. Um desses pacotes é o `readr`, que vamos utilizar no lugar das funções do R-base.
+
+```{r carregando_9, warning=FALSE}
+install.packages("readr")
+library(readr)
+```
+
+O `readr` possui uma função genérica para abrir arquivos de texto delimitado, a `read_delim`. Sua estrutura é semelhante à da `read.table`, exige a inclusão de alguns argumentos, porém outros são desnecessários, como o `stringsAsFactors`. Além disso, ela carrega esses arquivos mais rapidamente, além de conseguir identificar o tipo e o nome da variável pelas primeiras linhas do banco. 
+
+Vamos usar a função `read_delim` para abrir outro banco, mas com uma estrutura semelhante. Tentem reparar nas alterações feitas.
+
+```{r carregando_10, warning=FALSE}
+banco2 <- read_delim("AtlasBrasil/AtlasBrasil_Consulta1.csv", delim = ";", locale = locale(encoding = "latin1"))
+class(banco2$Espacialidades)
+```
+
+Vejam que a extensão desse último arquivo é a `.csv`. O `readr` (e também o R-base) tem uma função específica para abrir arquivos neste formato: a `read_csv` e a `read_csv2` (que se diferem somente pelo delimitador utilizado, `,` no caso do primeiro e `;` no segundo). Neste último caso, deixamos para trás o argumento do delimitador, além do `stringsAsFactors`. 
+
+```{r carregando_11, warning=FALSE}
+banco2 <- read_csv2("AtlasBrasil/AtlasBrasil_Consulta1.csv", locale = locale(encoding = "latin1"))
+class(banco2$Espacialidades)
+```
+
+Este banco nos deu a oportunidade de fazer mais uma reflexão: observem que algumas variáveis numéricas foram abertas como `character`. No R-base isso pode ser resolvido ao incluir o argumento `sep = .`, para definir qual símbolo deve ser utilizado como definidor dos decimais. Aqui isto não ocorreu. Para que isso seja corrigido, precisamos incluir também `decimal_mark = .` dentro do argumento `locale`.
+
+```{r carregando_12, warning=FALSE}
+banco2 <- read_csv2("AtlasBrasil/AtlasBrasil_Consulta1.csv", locale = locale(encoding = "latin1", decimal_mark = "."))
+class(banco2$`Índice de Gini 1991`)
 ```
 
 E se precisarmos abrir arquivos em outros formatos?
 
-O pacote `foreign` nos dá um conjunto de funções para abrir bancos em diferentes formatos, dentre eles o .sav (SPSS) e o .dta (Stata).
+O pacote `haven` nos dá um conjunto de funções para abrir bancos em diferentes formatos, dentre eles o .sav (SPSS) e o .dta (Stata).
 
-Ele funciona de maneira bastante simples. Suas funções geralmente são escritas como `read.EXTENSAO` - por exemplo, `read.dta` - ou `read.PROGRAMA` - exemplo, `read.spss`. Além do nome do arquivo, outros argumentos podem ser necessarios (consultem a ajuda!). 
-
-* .sav
-
-```{r carregando_7, warning=FALSE, message=FALSE}
-library(foreign) # Nao se esquecam de instalar o pacote, caso ele nao esteja instalado.
-
-banco3 <- read.spss("PercepcaoMedoMG/T075_BaseDeDados_PercepcaoDeMedo_MG_2009.sav",                                 to.data.frame = TRUE)
-
+```{r carregando_13, warning=FALSE}
+install.packages("haven")
+library(haven)
 ```
 
-Você pode ver mais detalhes sobre a importação de arquivos em formato .sav [aqui](https://www.r-bloggers.com/migrating-from-spss-to-r-rstats/).
+Ele funciona de maneira bastante simples. Suas funções geralmente são escritas como `read_EXTENSAO`. Além do nome do arquivo, outros argumentos podem ser necessarios (consultem a ajuda!). 
 
-* .dta
-
-O pacote `foreign` só permite abrir arquivos `.dta` correspondentes ao Stata 6-12. O pacote `readstata13` permite ler arquivos `.dta` mais recentes.
-
-```{r carregando_8, warning=FALSE}
-library(readstata13)
-banco4 <- read.dta13("Latinobarometro2016/Latinobarometro2016Esp_v20170205.dta")
+```{r carregando_14, warning=FALSE, message=FALSE}
+banco3 <- read_sav("PercepcaoMedoMG/T075_BaseDeDados_PercepcaoDeMedo_MG_2009.sav")
+banco4 <- read_dta("Latinobarometro2016/Latinobarometro2016Esp_v20170205.dta", encoding = "utf8")
 ```
 
-* .xls / .xlsx (pacote `readxl`)
+O pacote tenta manter a estrutura do arquivo original, incluindo seus *labels*, por exemplo. Percebam que pode ser necessário usar o argumento `encoding`.
 
-Por fim, o pacote `readxl` possibilita a leitura de arquivos advindos do Excel. Sua função `read_excel` detecta automaticamente a extensão do arquivo e funciona de maneira semelhante às demais funções estudadas.
+Para ler arquivos do Excel (`.xls` e `.xlsx`) podemos usar o pacote `readxl`. Sua função `read_excel` detecta automaticamente a extensão do arquivo e funciona de maneira semelhante às demais funções estudadas.
 
-```{r carregando_9, warning=FALSE}
+```{r carregando_15, warning=FALSE}
 library(readxl)
 
 banco5 <- read_excel("AtlasBrasil/AtlasBrasil_Consulta1.xlsx")
+```
+
+O R também tem um formato de arquivos, o *R Data*. São arquivos mais leves, que são lidos e exportados mais rapidamente e com funções mais intuitivas.
+
+Vamos carregar um banco com um recorte da MUNIC de 2015, que está em formato `.Rda`.
+
+```{r carregando_16, warning=FALSE}
+banco6 <- load("MUNIC_2015_RH_TerceirizacaoInformatizacao.rda")
+```
+
+Por fim, caso você não tenha certeza de qual função utilizar, o pacote `rio` é uma boa opção. Ele possui uma função genérica para a importação de arquivos no R, a `import`.
+
+```{r carregando_16, warning=FALSE}
+# Importando novamente alguns bancos de dados, agora usando o pacote 'rio'
+library(rio)
+
+banco1 <- import("Votacao_MunZona_2016/votacao_partido_munzona_2016_MG.txt")
+banco3 <- import("PercepcaoMedoMG/T075_BaseDeDados_PercepcaoDeMedo_MG_2009.sav")
+banco5 <- import("AtlasBrasil/AtlasBrasil_Consulta1.xlsx")
+banco6 <- import("MUNIC_2015_RH_TerceirizacaoInformatizacao.rda")
 ```
 
 ## 2.2 Exploração inicial e visualização de bancos de dados

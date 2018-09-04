@@ -20,25 +20,26 @@ As funções mais relevantes aqui são:
 
 Além delas, também trabalharemos com os `join` que são úteis para unir bancos de dados diferentes.
 
-Então, para começar nosso trabalho, não podemos nos esquecer de carregar este pacote.
+Então, para começar nosso trabalho, não podemos nos esquecer de carregar este pacote e também o `readr` que vamos usar para importar (e exportar!) nossas bases de dados.
 
 ```{r setup_1, message=FALSE}
 library(dplyr)
+library(readr)
 ```
 
 Retomamos nosso conteúdo abrindo o banco que utilizamos ontem. Vamos aproveitar e estabelecer o nosso diretório de trabalho.
 
 ```{r setup, include=FALSE, cache=FALSE}
 require("knitr")
-opts_knit$set(root.dir = '/Users/lucasgelape/Downloads/2018_ENAP/Bancos/')
+opts_knit$set(root.dir = '/Users/lucasgelape/Google Drive (USP)/Cursos/2018_ENAP/2_FundamentosEstatistica/Bancos/')
 ```
 
 ```{r setup_3, eval=FALSE}
 getwd()
-setwd("2018_ENAP/Bancos")
+setwd("/Users/lucasgelape/Google Drive (USP)/Cursos/2018_ENAP/2_FundamentosEstatistica/Bancos/")
 ```
 ```{r setup_4}
-banco <- read.csv2("AtlasBrasil/AtlasBrasil_Consulta1.csv", encoding = "latin1")
+banco <- read_csv2("AtlasBrasil/AtlasBrasil_Consulta1.csv", locale = locale(encoding = "latin1", decimal_mark = "."))
 ```
 
 ## 3.1 Renomear variáveis
@@ -54,12 +55,7 @@ A função `rename` nos permite renomear cada variável individualmente, ou com 
 ```{r renomear_2}
 banco <- rename(banco, municipios = Espacialidades)
 
-banco <- rename(banco, cod = Código, gini_1991 = Índice.de.Gini.1991, gini_2000 = Índice.de.Gini.2000,
-                gini_2010 = Índice.de.Gini.2010, poptot_1991 = População.total.1991,
-                poptot_2000 = População.total.2000, poptot_2010 = População.total.2010,
-                renda_pc_1991 = Renda.per.capita.1991, renda_pc_2000 = Renda.per.capita.2000,
-                renda_pc_2010 = Renda.per.capita.2010, perc_pobres_1991 = X..de.pobres.1991,
-                perc_pobres_2000 = X..de.pobres.2000, perc_pobres_2010 = X..de.pobres.2010)
+banco <- rename(banco, cod = Código, gini_1991 = `Índice de Gini 1991`, gini_2000 = `Índice de Gini 2000`, gini_2010 = `Índice de Gini 2010`, poptot_1991 = `População total 1991`, poptot_2000 = `População total 2000`, poptot_2010 = `População total 2010`, renda_pc_1991 = `Renda per capita 1991`, renda_pc_2000 = `Renda per capita 2000`, renda_pc_2010 = `Renda per capita 2010`, perc_pobres_1991 = `% de pobres 1991`, perc_pobres_2000 = `% de pobres 2000`, perc_pobres_2010 = `% de pobres 2010`)
                 
 names(banco)
 ```
@@ -143,23 +139,32 @@ banco <- select(banco, munic, uf, gini_91, gini_00, gini_10,
                        pobres_00, pobres_10)
 ```
 
-Sendo assim, vemos que a função `mutate` é uma boa opção para recodificar variáveis. Por exemplo, vamos agora recodificar a variável `uf` segundo a região do país, criando a variável região. O código ' um pouco longo, mas sua lógica nao é complexa.
+Sendo assim, vemos que a função `mutate` é uma boa opção para recodificar variáveis. Por exemplo, vamos agora recodificar a rendapc_10 para indicar que uma renda per capita acima de R$ 2.000,00 é "alta" e as demais "baixa".
 
 ```{r modificar_5}
 banco <- banco %>%
-  mutate(regiao = ifelse(uf == "MA" | uf == "PI" | uf == "SE" | uf =="AL"| 
-                         uf == "RN" | uf == "BA" | uf == "CE" | uf =="PB"|
-                         uf == "PE", "Nordeste", uf)) %>%
-  mutate(regiao = ifelse(uf == "PA" | uf == "TO" | uf == "AM" | uf =="AP"|
-                         uf == "AC" | uf == "RO" | uf == "RR" , "Norte", regiao)) %>%
-  mutate(regiao = ifelse(uf == "MG" | uf == "ES" | uf == "RJ" | uf == "SP",
-                         "Sudeste", regiao)) %>% 
-  mutate(regiao = ifelse(uf == "PR" | uf == "SC" | uf == "RS" , "Sul", regiao)) %>%
-  mutate(regiao = ifelse(uf == "DF" | uf == "MT" | uf == "MS" | uf == "GO",
-                         "Centro-Oeste", regiao))
+  mutate(regiao = ifelse(rendapc_10 > 2000, "Alta", "Baixa"))
 ```
 
-Para fazer isso, utilizamos a função `ifelse` que funciona como um teste lógico, com a seguinte estrutura: `ifelse(se X é verdadeiro, então Y, senão Z)`. No caso da parte inicial do código: se a uf for igual ao Maranhão ou Piauí ou Sergipe ou [...], então Nordeste, senão mantenha o valor informado na uf. Além disso, percebam que usamos o operador relacional `|`, que significa "ou". Operadores relacionais são muito úteis e você pode ler um pouco mais sobre eles neste [tutorial do curso do Leonardo Barone](https://github.com/leobarone/FLS6397/blob/master/tutorials/tutorial3.Rmd).
+Para fazer isso, utilizamos a função `ifelse` que funciona como um teste lógico, com a seguinte estrutura: `ifelse(se X é verdadeiro, então Y, senão Z)`. No caso da parte inicial do código: se a renda per capita em 2010 for maior que 2000, então *Alta*, senão *Baixa*.
+
+Uma forma mais simples de se fazer recodificações mais complexas é com a função `case_when`. Enquanto o `ifelse` é ideal para criar variáveis dicotômicas, o `case_when` auxilia a criar variáveis que contenham mais categorias. 
+
+Vamos criar uma variável chamada `regiao` que diz a qual região do país cada município pertence, utilizando a variável que informa a sua unidade federativa - `uf`.
+
+```{r modificar_5}
+banco <- banco %>%
+  mutate(regiao = case_when(uf == "MA" | uf == "PI" | uf == "SE" | uf =="AL"| 
+                            uf == "RN" | uf == "BA" | uf == "CE" | uf =="PB"|
+                            uf == "PE"                                        ~ "Nordeste",
+                            uf == "PA" | uf == "TO" | uf == "AM" | uf =="AP"|
+                            uf == "AC" | uf == "RO" | uf == "RR"              ~ "Norte",
+                            uf == "MG" | uf == "ES" | uf == "RJ" | uf == "SP" ~ "Sudeste",
+                            uf == "PR" | uf == "SC" | uf == "RS"              ~ "Sul",
+                            uf == "DF" | uf == "MT" | uf == "MS" | uf == "GO" ~ "Centro-Oeste"))
+```
+
+Percebam que usamos o operador relacional `|`, que significa "ou". Operadores relacionais são muito úteis e você pode ler um pouco mais sobre eles neste [tutorial do curso do Leonardo Barone](https://github.com/leobarone/FLS6397/blob/master/tutorials/tutorial3.Rmd).
 
 Podemos também recodificar variáveis numéricas, com o auxílio da função `cut`. Digamos que queremos transformar as variáveis contínuas referentes ao índice de Gini em variaveis categóricas, com 3 categorias. Os valores de referência são: x < 0.4 baixa, 0.4 < x < 0.7 media, e x > 0.7 alta. A função `cut` permite estabelecer diferentes cortes para classificar a variável.
 
@@ -231,7 +236,7 @@ banco_unido <- left_join(banco, banco2, by = "munic")
 head(banco_unido)
 ```
 
-Porém, ao observamos um panorama da base, vemos que a variável `uf` se repete. Sendo assim, ela existe na forma `uf.x` e `uf.y`. Podemos então também utilizá-la como variável identidade. Vale ressaltar que não é só porque elas têm o mesmo nome que sua utilização com esses fins é adequada. Além do nome idêntico, a informação deve ser a mesma (duas variáveis chamadas `nome`, por exemplo, poderiam conter o nome do município e o nome do seu prefeito. Apesar do mesmo nome, elas não seriam adequadas para a união. Inclusive, a melhor prática recomenda que sejam renomeadas) - inclusive, é adequado verificar se a informação é a mesma e se ela é consistente (se os nomes não estão escritos com grafia diferente, por exemplo).
+Porém, ao observamos um panorama da base, vemos que a variável `uf` se repete. Sendo assim, ela existe na forma `uf.x` e `uf.y`. Podemos então também utilizá-la como variável identidade. Vale ressaltar que não é só porque elas têm o mesmo nome que sua utilização com esses fins é adequada. Além do nome idêntico, a informação deve ser a mesma (duas variáveis chamadas `nome`, por exemplo, poderiam conter o nome do município e o nome do seu prefeito. Apesar do mesmo nome, elas não seriam adequadas para a união. A melhor prática recomenda que sejam renomeadas) - inclusive, é adequado verificar se a informação é a mesma e se ela é consistente (se os nomes não estão escritos com grafia diferente, por exemplo).
 
 ```{r uniao_3, warning=FALSE}
 banco_unido <- left_join(banco, banco2,
@@ -289,25 +294,41 @@ Até aqui, percorremos um longo caminho com nosso banco de dados. Renomeamos, cr
 
 Porém, todo este trabalho está guardado somente na memória temporária desta sessão do R. Para utilizá-lo posteriormente ou compartilhá-lo com outras pessoas, temos que exportar esses bancos. O R permite que realizemos tais exportações em arquivos de diferentes formatos. A gramática básica deles é semelhante àquela utilizada para abrir os bancos no programa. Mas, ao contrário de `read.X`, usaremos `write.X`.
 
-Uma boa opção é exportar o arquivo em extensão `.csv`. Trata-se de um formato leve, que pode ser aberto em Excel, e facilmente aberto posteriormente no R.
+Apesar de conhecermos a estrutura das funções do R-base, já recomendamos de pronto partir para as funções dos pacotes `readr`, `haven` e `rio` na exportação das bases de dados.
+
+Assim como nas funções do R-base, as funções de exportação do `readr` são bastante semelhantes àquelas de importação: `write_X`. Podemos, por exemplo, exportar os bancos de dados com extensões `.txt` ou `.csv`.
 
 ```{r exportar_1}
-write.csv(banco_unido, "banco_unido.csv", row.names = F)
+# .txt
+write_delim(banco_unido, "banco_unido.txt")
+
+# .csv
+write_csv(banco_unido, "banco_unido.csv")
 ```
 
-O argumento `row.names = F` evita que o R crie uma coluna com o número de cada observação no arquivo exportado.
-
-O pacote `foreign` e o `readstata` nos permitem exportar as bases em outros formatos que podem ser úteis:
+Os pacotes `haven` e o `rio` permitem exportar as bases em outros formatos que podem ser úteis. No `haven` a função é escrita de forma semelhante ao `read`. Já no `rio`, basta utilizar a função `export` e incluir a extensão do arquivo. 
 
 ```{r exportar_2, warning=FALSE}
-library(foreign)
-write.dta(banco_unido, "banco_unido.dta") # exporta em .dta (Stata 6-12)
-write.foreign(banco_unido, "banco_unido.txt", "banco_unido.sps",
-              package="SPSS")
+# Carregar o pacote 'rio', caso ele nao esteja ativo
+library(rio)
 
-library(readstata13)
-save.dta13(banco_unido, "banco_unido_stata13.dta")
+# .sav
+write_sav(banco_unido, "banco_unido.sav")
+
+# .dta
+write_dta(banco_unido, "banco_unido.dta")
+
+# Exporta para .sav utilizando o pacote 'rio'
+export(banco_unido, "banco.sav")
 ```
+
+Por fim, para salvar o banco em formato `.Rda` (o *R data*) basta usar a função `save` (importante não se esquecer de especificar o argumento `file =`).
+
+```{r exportarr_3, warning=FALSE}
+save(banco_unido, file = "banco_unido.Rdata")
+```
+
+Vale lembrar que estes não são os únicos formatos de arquivo existentes (apesar de provavelmente serem os mais utilizados nas áreas de atuação de vocês). 
 
 # Resumo do conteúdo trabalhado:
 
